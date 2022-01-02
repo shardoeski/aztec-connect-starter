@@ -9,18 +9,21 @@ import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import { IDefiBridge } from "./interfaces/IDefiBridge.sol";
 import { Types } from "./Types.sol";
 
-// import terminalv1 and Ticketbooth 
+import { VaultAPI } from "https://github.com/yearn/yearn-vaults/blob/main/contracts/BaseStrategy.sol";
 
 // import 'hardhat/console.sol';
 
-contract JuiceBridge  is IDefiBridge {
+contract YearnBridge is IDefiBridge {
   using SafeMath for uint256;
 
   address public immutable rollupProcessor;
 
+  VaultAPI public vault;
 
-  constructor(address _rollupProcessor, address _router) public {
+
+  constructor(address _rollupProcessor, address _vaultAddress) public {
     rollupProcessor = _rollupProcessor;
+    vault = VaultAPI(_vaultAddress);
   }
 
   receive() external payable {}
@@ -43,6 +46,10 @@ contract JuiceBridge  is IDefiBridge {
       bool isAsync
     )
   {
+    isAsync = false;
+
+
+
   }
 
   function canFinalise(
