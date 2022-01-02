@@ -46,7 +46,7 @@ contract YearnBridge is IDefiBridge {
       bool isAsync
     )
   {
-    isAsync = false;
+    isAsync = true;
 
 
 
