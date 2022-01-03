@@ -11,7 +11,6 @@ import { Types } from "./Types.sol";
 
 import { VaultAPI } from "https://github.com/yearn/yearn-vaults/blob/main/contracts/BaseStrategy.sol";
 
-// import 'hardhat/console.sol';
 
 contract YearnBridge is IDefiBridge {
   using SafeMath for uint256;
@@ -19,6 +18,10 @@ contract YearnBridge is IDefiBridge {
   address public immutable rollupProcessor;
 
   VaultAPI public vault;
+
+  address public constant YFI = address(0x0bc529c00c6401aef6d220be8c6ea1667f6ad93e);
+
+  address public constant yvYFI = address(0xE14d13d8B3b85aF791b2AADD661cDBd5E6097Db1);
 
 
   constructor(address _rollupProcessor, address _vaultAddress) public {
@@ -46,8 +49,28 @@ contract YearnBridge is IDefiBridge {
       bool isAsync
     )
   {
-    isAsync = true;
+    require(
+            msg.sender == rollupProcessor,
+            "YearnBrdige: INVALID_CALLER"
+        );
 
+    isAsync = false;
+
+    
+    if (inputAssetA.erc20Address == YFI) {
+       // Deposit inputValue to yvYFI    
+       // outputValueA = received yvYFI 
+       // Transfer yvYFI to rollup
+    } 
+
+    
+    if(inputAssetA.erc20Address == yvYFI){
+        // Withdraw inputValue from yvYFI
+        // Check outputAssetA is correct
+        // outputValueA set based on withdrawn asset
+        // Transfer outputValueA of outputAssetA to rollup
+
+    }
 
 
   }
