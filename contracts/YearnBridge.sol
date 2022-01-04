@@ -9,8 +9,10 @@ import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import { IDefiBridge } from "./interfaces/IDefiBridge.sol";
 import { Types } from "./Types.sol";
 
-import { VaultAPI } from "https://github.com/yearn/yearn-vaults/blob/main/contracts/BaseStrategy.sol";
-
+interface VaultAPI {
+    function deposit(uint256 amount, address recipient) external returns (uint256);
+    function withdraw(uint256 maxShares, address recipient) external returns (uint256);
+}
 
 contract YearnBridge is IDefiBridge {
   using SafeMath for uint256;
@@ -55,23 +57,18 @@ contract YearnBridge is IDefiBridge {
         );
 
     isAsync = false;
-
     
     if (inputAssetA.erc20Address == YFI) {
-       // Deposit inputValue to yvYFI    
-       // outputValueA = received yvYFI 
-       // Transfer yvYFI to rollup
+        uint256 outputValueA = vault.deposit(inputValue, rollupProcessor);
     } 
-
     
     if(inputAssetA.erc20Address == yvYFI){
-        // Withdraw inputValue from yvYFI
-        // Check outputAssetA is correct
-        // outputValueA set based on withdrawn asset
-        // Transfer outputValueA of outputAssetA to rollup
-
+        require(
+            outputAssetA.assetType == Types.AztecAsset.ETH,
+            "YearnBridge: Only ETH acceptable as a withdrawable asset"
+        );
+        uint256 outputValueA = vault.withdraw(inputValue, rollupProcessor);
     }
-
 
   }
 
