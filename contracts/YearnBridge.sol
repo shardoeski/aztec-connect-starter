@@ -19,16 +19,8 @@ contract YearnBridge is IDefiBridge {
 
   address public immutable rollupProcessor;
 
-  VaultAPI public vault;
-
-  address public constant YFI = address(0x0bc529c00c6401aef6d220be8c6ea1667f6ad93e);
-
-  address public constant yvYFI = address(0xE14d13d8B3b85aF791b2AADD661cDBd5E6097Db1);
-
-
   constructor(address _rollupProcessor, address _vaultAddress) public {
     rollupProcessor = _rollupProcessor;
-    vault = VaultAPI(_vaultAddress);
   }
 
   receive() external payable {}
@@ -57,20 +49,40 @@ contract YearnBridge is IDefiBridge {
         );
 
     isAsync = false;
-    
-    if (inputAssetA.erc20Address == YFI) {
-        uint256 outputValueA = vault.deposit(inputValue, rollupProcessor);
-    } 
-    
-    if(inputAssetA.erc20Address == yvYFI){
-        require(
-            outputAssetA.assetType == Types.AztecAsset.ETH,
-            "YearnBridge: Only ETH acceptable as a withdrawable asset"
-        );
-        uint256 outputValueA = vault.withdraw(inputValue, rollupProcessor);
-    }
 
+   string memory inputAssetName =  IERC20(inputAssetA.erc20Address).name();
+   string memory outputAssetName =   IERC20(outputAssetA.erc20Address).name();
+
+   // Deposit
+   if(isVault(inputAssetName)){
+        vault = VaultAPI(outputAssetA.erc20Address);
+        uint256 outputValueA = vault.deposit(inputValue, rollupProcessor);
+   } 
+   // Withdraw 
+   else if (isVault(outputAssetName)){
+        vault = VaultAPI(inputAssetA.erc20Address);
+        uint outputValueA = vault.withdraw(inputValue, rollupProcessor);
+   } 
+
+   else {
+        revert("YearnBridge: The input or output asset has to be a yearn Vault");
+   }
+
+   function isVault(string str) internal  pure returns (string) {
+      bytes memory strBytes = bytes(str);
+      bytes memory result = new bytes(2);
+      result[0] = strBytes[0];
+      result[1] = strBytes[1];
+      string subString = string(result);
+
+      if(subString == "yv"){
+          return true;
+      } else{
+          return false;
+      }
   }
+
+
 
   function canFinalise(
     uint256 /*interactionNonce*/
